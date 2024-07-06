@@ -1,0 +1,109 @@
+﻿
+@{
+    ViewBag.Title = "SignUp";
+}
+
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="text-center">Sign Up</h3>
+                </div>
+                <div class="card-body">
+                    <form action="@Url.Action("SignUp","LogIn")" method="post">
+                        <div class="row">
+                            <div class="col-7">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password1" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password2" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="password2" name="password2" required>
+                                </div>
+                                <div class="mb-3">
+                                    <input class="form-check-input" type="radio" name="gender" id="genRadioF" value="F">
+                                    <label class="form-check-label" for="flexRadioDefault2">
+                                        Female
+                                    </label>
+                                    <input class="form-check-input" type="radio" name="gender" id="genRadioM" value="M">
+                                    <label class="form-check-label" for="flexRadioDefault2">
+                                        Male
+                                    </label>
+                                </div>
+                                <div class="row ">
+                                    <div class="col-6 col-sm-12 mb-3">
+                                        <label for="Branch" class="form-label">Branch</label>
+                                        <select class="form-select" name="branch">
+                                            <option value="CE">CIVIL ENGINEERING</option>
+                                            <option value="CSE">COMPUTER SCIENCE ENGINEERING</option>
+                                            <option value="ECE">ELECTRONIC ENGINEERING</option>
+                                            <option value="EE">ELECTRICAL ENGINEERING</option>
+                                            <option value="ME">MECHANICAL ENGINEERING</option>
+                                            <option value="O">OTHER</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6 col-sm-12 mb-3">
+                                        <label for="UserType" class="form-label">User Type</label>
+                                        <select class="form-select" name="userType">
+                                            <option value="STUDENT">STUDENT</option>
+                                            <option value="FACULTY">FACULTY</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 col-sm-12 mb-3">
+                                        <label for="Branch" class="form-label">Session</label>
+                                        <select class="form-select" name="ddlSession">
+                                            <option>2020-2024</option>
+                                            <option>2021-2025</option>
+                                            <option>2022-2026</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-6">
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6">
+                                        <a href="@Url.Action("LogIn","LogIn")" class="btn btn-info"><< Back</a>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-5">
+                                <img class="img-fluid" src="~/Content/Images/loginBot.png" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                {
+                    <div id="footerCard" class="card-footer">
+                        <div class="text-danger">@ViewBag.ErrorMessage</div>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(ViewBag.Message))
+                {
+                    <div id="footerCard" class="card-footer">
+                        <div class="text-success">
+                            @ViewBag.Message
+                            <a href="@Url.Action("LogIn","LogIn")" class="nav-link text-primary">Login</a>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>

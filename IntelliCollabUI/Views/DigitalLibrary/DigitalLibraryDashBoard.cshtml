@@ -1,0 +1,60 @@
+﻿
+@{
+    ViewBag.Title = "DigitalLibraryDashBoard";
+}
+<style>
+    .Book {
+        margin: 2px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        text-align: center;
+        vertical-align: central;
+        border: none;
+    }
+    body{
+        height:188vh;
+    }
+</style>
+<h2 class="text-center text-white">Digital Library Dashboard</h2>
+<hr class="border-light" />
+
+<div class="row">
+    <div class="offset-lg-2 offset-md-2 col-lg-2 col-md-2">
+        <div class="card Book">
+            <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/184.webp" class=" card-img-top" alt="Fissure in Sandstone" />
+            <div class="card-body">
+
+                @Html.ActionLink("Upload Assingments", "AssingmentUpload", "DigitalLibrary", new { }, new { @class = "card-title fw-bold nav-link h4" })
+            </div>
+        </div>
+    </div>
+    @if (Session["UserRole"] != null && (Session["UserRole"].ToString().Equals("F") || Session["UserRole"].ToString().Equals("A")))
+    {
+        <div class="col-lg-2 col-md-2">
+            <div class="card Book">
+                <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/184.webp" class="card-img-top" alt="Fissure in Sandstone" />
+                <div class="card-body">
+
+                    @Html.ActionLink("Upload Books", "LibraryUpload", "DigitalLibrary", new { }, new { @class = "card-title fw-bold nav-link h4" })
+                </div>
+            </div>
+        </div>
+    }
+    <div class="col-lg-2 col-md-2">
+        <div class="card Book">
+            <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/184.webp" class="card-img-top" alt="Fissure in Sandstone" />
+            <div class="card-body">
+
+                @Html.ActionLink("Assingment View", "AssingmentView", "DigitalLibrary", new { }, new { @class = "card-title fw-bold nav-link h4" })
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2">
+        <div class="card Book">
+            <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/184.webp" class="card-img-top" alt="Fissure in Sandstone" />
+            <div class="card-body">
+
+                @Html.ActionLink("Books View", "LibraryView", "DigitalLibrary", new { }, new { @class = "card-title fw-bold nav-link h4" })
+            </div>
+        </div>
+    </div>
+</div>

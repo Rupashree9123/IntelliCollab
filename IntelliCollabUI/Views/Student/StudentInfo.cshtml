@@ -1,0 +1,404 @@
+﻿
+@{
+    ViewBag.Title = "StudentInfo";
+}
+<style>
+    .center-checkbox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .checkboxTbl {
+        width: 50%;
+        margin-top: 0.5rem;
+    }
+
+    table thead tr th {
+        min-width: 10rem;
+    }
+
+    table tbody tr th {
+        min-width: 10rem;
+    }
+</style>
+<h2 class="text-center text-white">Student Information</h2>
+<hr class="border-light" />
+<div id="tableViewTab" class="mt-1 tab-content">
+    <div class="row">
+        <div class="col-lg-2 col-md-2 col-sm-12">
+            <div class="d-flex justify-content-start">
+                <button class="btn btn-primary m-1" onclick="addRow()"><i class="fa-solid fa-calendar-plus"></i></button>
+                <button class="btn btn-success m-1" onclick="editRow()"><i class="fa-solid fa-edit"></i></button>
+                <button class="btn btn-danger m-1" onclick="deleteRow()"><i class="fa-solid fa-trash"></i></button>
+                <button class="btn btn-success m-1" onclick="submit()"><i class="fa-solid fa-floppy-disk"></i></button>
+            </div>
+        </div>
+        <div class="col-lg-1 col-md-1 col-sm-12">
+            <button type="button" class="btn btn-primary mt-1 mb-1">
+                Students <span class="badge bg-secondary" id="noOfStd">00004</span>
+            </button>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-12">
+            <div class="input-group mb-3">
+                <input type="text" id="txtId" class="save form-control" placeholder="Search by Registration No/Roll No" />
+                <button class="input-group-text btn btn-success" id="searchById"><i class="fa-solid fa-search"></i></button>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12">
+            <div class="row">
+                <div class='col-sm-12 col-md-4 col-lg-4'>
+                    <div class="input-group mb-3 me-1">
+                        <span class="input-group-text text-white bg-primary" id="basic-addon1">Branch</span>
+                        <select id="ddlBranch" class="form-select">
+                            <option>ME</option>
+                            <option>CSE</option>
+                            <option>ECE</option>
+                            <option>EE</option>
+                            <option>CE</option>
+                        </select>
+                    </div>
+                </div>
+                <div class='col-sm-12 col-md-4 col-lg-4'>
+                    <div class="input-group mb-3 me-1">
+                        <span class="input-group-text text-white bg-primary" id="basic-addon1">Session</span>
+                        <select id="ddlSession" class="form-select">
+                            <option>2020-2024</option>
+                            <option>2021-2025</option>
+                            <option>2022-2026</option>
+                        </select>
+
+                    </div>
+                </div>
+                <div class='col-sm-12 col-md-4 col-lg-4'>
+                    <div class="input-group mb-3 me-1">
+                        <button class="input-group-text btn btn-success" id="btnSearch"><i class="fa-solid fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex flex-column bd-highlight mb-3" style="overflow-y:auto">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th><input type="checkbox" id="selectAll" class="checkboxTbl" />All </th>
+                    <th>ID</th>
+                    <th>RegNo</th>
+                    <th>Roll No</th>
+                    <th>Name</th>
+                    <th>Father Name</th>
+                    <th>G-Mail</th>
+                    <th>Mobile</th>
+                    <th>Branch</th>
+                    <th>Address</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Password</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody id="studentTable">
+                <tr>
+                    @*<td class="center-checkbox"><input type="checkbox" data-attr="checkBox" class="save checkboxTbl form-check" /></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 15%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">15111111</div>
+                            </div>
+                        </td>
+                        <td></td>*@
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    var allDdl = [];
+
+    $(() => {
+        getDdlData();
+
+        //checkBox ALL
+        $('#selectAll').change(function () {
+            var isChecked = $(this).prop('checked');
+            // Set the checked state of all checkboxes in the table
+            $('.checkboxTbl').prop('checked', isChecked);
+        });
+    });
+
+    function getDdlData() {
+        $.ajax({
+            url: `@Url.Action("GetAllDropdownList", "DashBoard")`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+
+        }).always(function (e) {
+            allDdl = e;
+            ddlBind("ddlBranch", e.DeptList, 'ALL','ALL');
+            getStudent();
+        });
+    }
+
+    function getStudent() {
+        let id = $('#txtId').val();
+        let branch = $('#ddlBranch').val();
+        let session = $('#ddlSession').val();
+
+        $.ajax({
+            url: `@Url.Action("GetStudent", "Student")?Id=${id}&Branch=${branch}&Session=${session}`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+            console.log("success Section");
+            studentTable(e);
+
+        }).always(function (e) {
+            console.log("complete Section");
+        });
+    }
+
+    function studentTable(dataSet) {
+        $('#noOfStd').text(dataSet?.length);
+        let row = ``;
+        $.each(dataSet, function (i,e) {
+            row += `<tr>
+                    <td class="center-checkbox"><input type="checkbox" data-attr="checkBox" class="save checkboxTbl form-check" /></td>
+                    <td><input type='text' class='form-control save' data-attr='ID' disabled value='${e.ID}'/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='S_REG_NO' disabled value='${e.S_REG_NO}'/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='ROLL_NO' disabled value='${e.ROLL_NO}'/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='NAME' disabled value='${e.NAME}'/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='FATHER_NAME' disabled value='${e.FATHER_NAME}'/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='GMAIL' disabled value='${e.GMAIL}'/></td>
+                    <td><input type='number' class='form-control edit save' data-attr='MOBILE_NO' disabled value='${e.MOBILE_NO}'/></td>
+                    <td>${rowDdlBind(i + e.ID, "DeptList", e.BRANCH, 'BRANCH', true, 'disabled')}</td>
+
+                    <td><input type='text' class='form-control edit save' data-attr='ADDRESS' disabled value='${e.ADDRESS}'/> </td>
+                    <td><input type='date' class='form-control edit save' data-attr='DOB' disabled value='${moment(e.DOB).format("YYYY-MM-DD")}'/></td>
+                    
+                    <td>${GenderDdl(e.GENDER,'GENDER')}</td>
+                    <td><input type='password' data-attr='PASSWORD' class='form-control edit save' value='${e.PASSWORD}' disabled onfocusin="visibleIn(this)" onfocusout="visibleOut(this)"/></td>
+                    
+                    <td>${ActiveDdl(e.ACTIVE, 'ACTIVE')}</td>
+                    </tr>`;
+            //<td><input type='text' class='form-control edit save' data-attr='GENDER' disabled value='${e.GENDER}'/></td>
+            //</td><td><input type='text' class='form-control edit save' data-attr='ACTIVE' disabled value='${e.ACTIVE}'/></td>
+            //<td><input type='text' class='form-control edit save' data-attr='BRANCH' disabled value='${e.BRANCH}'/></td>
+            //<td><input type='text' class='form-control edit save' data-attr='PASSWORD' disabled value='${e.PASSWORD}'/></td>
+        });
+        $('#studentTable').html(row);
+    }
+
+
+
+    //add Row
+    function addRow() {
+        row = `<tr>
+                    <td class="center-checkbox"><input type="checkbox" data-attr="checkBox" class="save checkboxTbl form-check" /></td>
+                    <td><input type='text' class='form-control save' data-attr='ID' disabled value=''/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='S_REG_NO' disabled value=''/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='ROLL_NO' disabled value=''/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='NAME' disabled value=''/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='FATHER_NAME' disabled value=''/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='GMAIL' disabled value=''/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='MOBILE_NO' disabled value=''/></td>
+                    <td>${rowDdlBind('new', "DeptList", '-1', 'BRANCH', true, '')}</td>
+
+                    <td><input type='text' class='form-control edit save' data-attr='ADDRESS' disabled value=''/> </td>
+                    <td><input type='date' class='form-control edit save' data-attr='DOB' disabled value=''/></td>
+                    <td>${GenderDdl(null, 'GENDER')}</td>
+                    
+                    <td><input type='text' class='form-control edit save' data-attr='PASSWORD' disabled value=''/></td>
+                    <td>${ActiveDdl(null, 'ACTIVE')}</td>
+                    </tr>`;
+        //<td><input type='text' class='form-control edit save' data-attr='GENDER' disabled value=''/></td>
+        //<td><input type='text' class='form-control edit save' data-attr='ACTIVE' disabled value=''/></td>
+        //<td><input type='text' class='form-control edit save' data-attr='BRANCH' disabled value=''/></td>
+        $('#studentTable').append(row);
+    }
+
+    //delete Row
+    function deleteRow() {
+        var checkedCheckboxes = $('.checkboxTbl:checked');
+
+        checkedCheckboxes.each(function () {
+
+            var headerId = $(this).attr('id');
+            if (!(headerId == 'selectAll')) {
+                $(this).closest('tr').remove();
+            }
+
+        });
+    }
+
+    let editFlag = false;
+    function editRow() {
+        if (editFlag) {
+            $('.edit').prop('disabled', true);
+            editFlag = false;
+        } else {
+            $('.edit').prop('disabled', false);
+            editFlag = true;
+        }
+    }
+
+    function submit() {
+        let rowObj = [];
+
+        var checkedCheckboxes = $('.checkboxTbl:checked');
+
+        checkedCheckboxes.each(function () {
+
+            var headerId = $(this).attr('id');
+            let columns = $(this).closest('tr').find('td');
+
+            let obj = {};
+
+            if (!(headerId == 'selectAll')) {
+                columns.each(function () {
+                    let attrName = $(this).find('.save').attr('data-attr');
+                    if (!(attrName == 'checkBox')) {
+                        obj[attrName] = $(this).find('.save').val();
+                    }
+                    if ($(this).find('.save').val() == undefined) {
+                        var a = '';
+                    }
+                });
+                obj['SESSION'] = $('#ddlSession').val();
+                rowObj.push(obj);
+            }
+        });
+
+        console.log(rowObj);
+        if (rowObj != null && rowObj.length > 0) {
+            if (rowObj.some(x => x.BRANCH != '-1') && rowObj.some(x => x.SESSION != '')) {
+                $.ajax({
+                    url: `@Url.Action("SaveStudent", "Student")`,
+                    method: "PUT",
+                    beforeSend: function (xhr) {
+                        console.log("Before Section");
+                    },
+                    data: JSON.stringify(rowObj),
+                    dataType: 'json',
+                    contentType: 'application/json;charset=utf-8',
+                    statusCode: {
+                        404: function () {
+                            alert("page not found");
+                        },
+                        505: function () {
+                            alert("Internal Server Error");
+                        }
+                    }
+                }).done(function (e) {
+                    console.table(e);
+                }).always(function (e) {
+                    alert(e);
+                    getStudent();
+                });
+            } else {
+                alert("Select Branch to save data");
+            }
+        } else {
+            alert("please select row to save the data");
+        }
+
+    }
+
+    //dropdown
+    function ddlBind(id, dataList, optionMsg, optionVal) {
+        $(`#${id}`).empty();
+
+        let option = `<option value='${optionVal}'>--${optionMsg}--</option>`;
+        if (dataList != null && dataList.length > 0) {
+            $.each(dataList, function (i, e) {
+                option += `<option value='${e.VALUE}'>${e.TEXT}</option>`
+            });
+        }
+        $(`#${id}`).html(option);
+    }
+
+    function rowDdlBind(id, DataKey, key, dataAttr, editFlag, disableFlg) {
+        
+        let editCmd = editFlag ? 'edit' : '';
+        let option = `<select id='#${id}' data-attr='${dataAttr}' class='form form-control ${editCmd} save' ${disableFlg}>`;
+       
+        option += `<option value='-1'>--SELECT--</option>`;
+        if (allDdl[DataKey] != null && allDdl[DataKey].length > 0) {
+            $.each(allDdl[DataKey], function (i, e) {
+                if (e.VALUE == key)
+                    option += `<option value='${e.VALUE}' selected>${e.TEXT}</option>`;
+                else
+                    option += `<option value='${e.VALUE}' >${e.TEXT}</option>`;
+            });
+        }
+        option += `</select>`;
+
+        return option;
+    }
+
+    function visibleIn(e) {
+        $(e).prop("type", "text");
+    }
+
+    function visibleOut(e) {
+        $(e).prop("type", "password");
+    }
+
+    function ActiveDdl(e, colName) {
+        return `<select class='form-select edit save' data-attr='${colName}' disabled>
+                    <option value='Y' ${e == 'Y' ? 'selected' : ''}>Active</option>
+                    <option value='N' ${e == 'N' ? 'selected' : ''}>In Active</option>
+                </select>`;
+    }
+
+    function GenderDdl(e, colName) {
+        return `<select class='form-select edit save' data-attr='${colName}' disabled>
+                    <option value='M' ${e == 'M' ? 'selected' : ''}>Mail</option>
+                    <option value='F' ${e == 'F' ? 'selected' : ''}>Femail</option>
+                </select>`;
+    }
+
+    $('#btnSearch').click(() => {
+        getStudent();
+    });
+
+    $('#searchById').click(() => {
+        getStudent();
+    })
+</script>

@@ -1,0 +1,209 @@
+﻿
+@{
+    ViewBag.Title = "Assingment";
+}
+<style>
+    .center-checkbox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .checkboxTbl {
+        width: 50%;
+        margin-top: 0.5rem;
+    }
+
+    table thead tr th {
+        min-width: 10rem;
+    }
+
+    table tbody tr th {
+        min-width: 10rem;
+    }
+
+    .Book {
+        margin: 2px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        text-align: center;
+        vertical-align: central;
+        border: none;
+    }
+    .text-left{
+        text-align:left !important;
+    }
+    .text-right {
+        text-align: right !important;
+    }
+    .fs-7{
+        font-size:0.7rem !important;
+    }
+</style>
+<h2 class="text-center text-white">Digital Library</h2>
+<hr class="border-light" />
+<div class="row">
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Branch</span>
+            <select id="ddlBranch" class="form-select">
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Cources Name</span>
+            <select id="ddlSubject" class="form-select">
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Session</span>
+            <select id="ddlSession" class="form-select">
+                <option value='2020-2024'>2020-2024</option>
+                <option value='2021-2025'>2021-2025</option>
+                <option value='2022-2026'>2022-2026</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Session</span>
+            <select id="ddlSem" class="form-select">
+                <option value='1'>1</option>
+                <option value='2'>2</option>
+                <option value='3'>3</option>
+                <option value='4'>4</option>
+                <option value='5'>5</option>
+                <option value='6'>6</option>
+                <option value='7'>7</option>
+                <option value='8'>8</option>
+               
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <button class="btn btn-primary" onclick="getAssningmentList()"><i class="fa-solid fa-search"></i> Submit</button>
+    </div>
+    <div class="col-lg-12">
+        <div class="row" id="AsstShow">
+            <!--<div class="col-lg-2 col-md-2">
+                <div class="card Book">
+                    <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/184.webp" class="card-img-top" alt="Fissure in Sandstone" />
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <p class="card-title">@DateTime.Now</p>
+                        <a href="#!" class="btn btn-primary" data-mdb-ripple-init><i class="fa fa-download"></i> Download</a>
+                    </div>
+                </div>
+            </div>-->
+        </div>
+    </div>
+</div>
+<script>
+    $(() => {
+        getDdlData()
+    });
+    function getAssningmentList() {
+
+        let dataSet = {
+            Branch: $('#ddlBranch option:selected').val(),
+            Session: $('#ddlSession option:selected').val(),
+            Course: $('#ddlSubject option:selected').val(),
+            Sem: $('#ddlSem option:selected').val()
+        }
+
+        $.ajax({
+            url: `@Url.Action("ViewAssingment", "DigitalLibrary")`,
+            method: "POST",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            data: JSON.stringify(dataSet),
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+
+            generateBookCard(e);
+        }).always(function (e) {
+            console.table(e);
+        });
+    }
+
+    function getDdlData() {
+        $.ajax({
+            url: `@Url.Action("GetAllDropdownList", "DashBoard")`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+
+        }).always(function (e) {
+            allDdl = e;
+            ddlBind("ddlBranch", e.DeptList, '--SELECT--','ALL');
+            ddlBind("ddlSubject", e.SubjectList, '--SELECT--','ALL');
+
+        });
+    }
+
+    function ddlBind(id, dataList, optionMsg, optionVal) {
+        $(`#${id}`).empty();
+
+        let option = `<option value='${optionVal}'>--${optionMsg}--</option>`;
+        if (dataList != null && dataList.length > 0) {
+            $.each(dataList, function (i, e) {
+                option += `<option value='${e.VALUE}'>${e.TEXT}</option>`
+            });
+        }
+        $(`#${id}`).html(option);
+    }
+
+    function generateBookCard(dataList)
+    {
+        $('#AsstShow').empty();
+        let card = '';
+        if (dataList!=null && dataList.length>0) {
+            $.each(dataList, function (i, e) {
+
+                let img = e.FileExtension.includes("image") ? '../Content/Images/imageDoc.jpeg' : '../Content/Images/Doc.jpeg';
+                card += `<div class="col-lg-2 col-md-2">
+                            <div class="card Book">
+                                <img src="${img}" class="card-img-top" alt="book cover" />
+                                <div class="card-body">
+                                    <h5 class="card-title">${e.Title}</h5>
+                                    <p class="card-text">${e.Desc}</p>
+                                    <div class="row">
+                                        <div class="col-6 card-text text-left fs-7">Uploaded By: ${e.UploadedBy}</div>
+                                        <div class="col-6 card-text text-right fs-7">Last Date of submit: ${moment(e.EndDate).format("DD-MM-YYYY")}</div>
+                                    </div>
+                                    <a href="@Url.Action("DownloadAsst", "DigitalLibrary")?Filename=${e.FileName}&contentType=${e.FileExtension}" download="${e.FileName}" class="btn btn-primary" data-mdb-ripple-init><i class="fa fa-download"></i> Download</a>
+                                </div>
+                            </div>
+                        </div>`;
+            });
+        }
+        $('#AsstShow').html(card);
+    }
+</script>

@@ -1,0 +1,342 @@
+﻿
+@{
+    ViewBag.Title = "AssingmentUpload";
+}
+<style>
+    img {
+        width: 11rem;
+        height: 22vh !important;
+    }
+
+    #facultyAsst tr td {
+        color: white;
+    }
+</style>
+<h2 class="text-center text-white">Assingment Upload</h2>
+<hr class="border-light" />
+<div class="row">
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Branch Name</span>
+            <select id="ddlBranch" class="form-select" onchange="getAssningmentList()">
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Cources Name</span>
+            <select id="ddlSubject" class="form-select" onchange="getAssningmentList()">
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Session</span>
+            <select id="ddlSession" class="form-select" onchange="getAssningmentList()">
+                <option>2020-2024</option>
+                <option>2021-2025</option>
+                <option>2022-2026</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Session</span>
+            <select id="ddlSem" class="form-select" onchange="getAssningmentList()">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Start Date</span>
+            <input id="txtFromDate" class="form-control" type="date" />
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">End Date</span>
+            <input id="txtToDate" class="form-control" type="date" />
+        </div>
+    </div>
+</div>
+@if (Session["UserRole"] != null && (Session["UserRole"].ToString().Equals("F") || Session["UserRole"].ToString().Equals("A")))
+{
+
+    <div class="d-flex flex-column bd-highlight mb-3" style="overflow-y:auto;height:20vh;">
+        <table id="tblFaculty" class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <!--<th>ID</th>-->
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>File Name</th>
+                    <!--<th>Type</th>-->
+                    <th>Subject</th>
+                    <th>Semester</th>
+                    <th>Branch</th>
+                    <th>Session</th>
+                    <th>Start Date</th>
+                    <th>Last Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="facultyAsst">
+                <tr>
+                    <!--<td></td>-->
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <!--<td></td>-->
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+}
+<div class="row">
+    <div class="col-lg-3 col-md-3 col-sm-12">
+        <div class="card" style="height:40vh;">
+            <div class="card-header">
+                <div class="input-group mb-3 me-1">
+                    @*<span class="input-group-text text-white bg-primary" id="basic-addon1">Upload Assingment</span>*@
+                    <input id="fileUpload" class="form-control" type="file" />
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <img id="coverImage" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8 col-md-8 col-sm-12 d-flex flex-column">
+        <div class="row">
+
+        </div>
+        <div class="p-2 bd-highlight"><textarea id="txtTitle" rows="1" class="form-control" placeholder="Title"></textarea></div>
+        <div class="p-2 bd-highlight"><textarea id="txtDesc" rows="12" class="form-control" placeholder="Description"></textarea></div>
+    </div>
+</div>
+<div class="d-flex justify-content-center">
+    <button class="btn btn-primary" onclick="saveUserProfile()">Submit</button>
+</div>
+<script>
+    var allDdl = [];
+    $(()=>{
+        getDdlData();
+    });
+    $('#fileUpload').change(function () {
+        // Check if any file is selected
+        if (this.files && this.files[0]) {
+            // Create a FileReader object
+            var reader = new FileReader();
+
+            // Set up the onload event handler
+            reader.onload = function (e) {
+                // Set the src attribute of the image tag to the loaded image data
+                let content = ((e.currentTarget.result).split(';')[0]);
+                if (content.includes('image')) {
+                    $('#coverImage').attr('src', '../Content/Images/imageDoc.jpeg');
+                } else if (content.includes('application')){
+                    $('#coverImage').attr('src', '../Content/Images/Doc.jpeg');
+                }
+            }
+
+            // Read the selected file as a data URL
+            reader.readAsDataURL(this.files[0]);
+        } else {
+            alert("only image allow");
+            $('#UploadImage').val('');
+        }
+    });
+
+
+    function saveUserProfile() {
+        let dataSet = {
+            Title: $('#txtTitle').val(),
+            Desc: $('#txtDesc').val(),
+            Branch: $('#ddlBranch option:selected').val(),
+            StartDate: $('#txtFromDate').val(),
+            EndDate: $('#txtToDate').val(),
+            Course: $('#ddlSubject option:selected').val(),
+            Session: $('#ddlSession option:selected').val(),
+            Sem: $('#ddlSem option:selected').val()
+        }
+        var formData = new FormData();
+        formData.append('saveObject', JSON.stringify(dataSet));
+        formData.append('UploadedFile', $('#fileUpload')[0].files[0]);
+
+        $.ajax({
+            url: `@Url.Action("UploadAssingment", "DigitalLibrary")`,
+            method: "POST",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            data: formData,
+            processData: false,  // tell jQuery not to process the data
+            contentType: false,  // tell jQuery not to set contentType
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+            console.log("success Section");
+
+            alert(e);
+        }).always(function (e) {
+            console.log("complete Section");
+            getAssningmentList();
+
+            //alert("complete section");
+        });
+    }
+
+
+    //calling all dropdown
+    function getDdlData() {
+        $.ajax({
+            url: `@Url.Action("GetAllDropdownList", "DashBoard")`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+
+        }).always(function (e) {
+            allDdl = e;
+            ddlBind("ddlBranch", e.DeptList, '--SELECT--','');
+            ddlBind("ddlSubject", e.SubjectList, '--SELECT--','');
+        });
+    }
+
+    function ddlBind(id, dataList, optionMsg, optionVal) {
+        $(`#${id}`).empty();
+
+        let option = `<option value='${optionVal}'>--${optionMsg}--</option>`;
+        if (dataList != null && dataList.length > 0) {
+            $.each(dataList, function (i, e) {
+                option += `<option value='${e.VALUE}'>${e.TEXT}</option>`
+            });
+        }
+        $(`#${id}`).html(option);
+    }
+
+    function getAssningmentList() {
+
+        let dataSet = {
+            Branch: $('#ddlBranch option:selected').val(),
+            Session: $('#ddlSession option:selected').val(),
+            Course: $('#ddlSubject option:selected').val(),
+            Sem: $('#ddlSem option:selected').val()
+        }
+
+        $.ajax({
+            url: `@Url.Action("ViewAssingment", "DigitalLibrary")`,
+            method: "POST",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            data: JSON.stringify(dataSet),
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+
+            generateTable(e);
+        }).always(function (e) {
+            console.table(e);
+        });
+    }
+
+    function generateTable(e) {
+        $('#facultyAsst').empty();
+        let row = ``;
+        if (e != null && e.length > 0) {
+            $.each(e, function (i, item) {
+                row += `<tr>
+                            <td>${item.Title}</td>
+                            <td>${item.Desc}</td>
+                            <td>${item.FileName}</td>
+                            <td>${item.Course}</td>
+                            <td>${item.Sem}</td>
+                            <td>${item.Branch}</td>
+                            <td>${item.Session}</td>
+                            <td>${moment(item.StartDate).format("DD-MM-YYYY")}</td>
+                            <td>${moment(item.EndDate).format("DD-MM-YYYY")}</td>
+                            <td><button class='btn btn-danger' onclick='deleteFile("${item.AsstId}","${item.FileName}")'><i class="fa-solid fa-trash"></i> Delete</button></td>
+                        </tr>`;
+                //<td>${item.AsstId}</td>
+                //<td>${item.FileExtension}</td>
+            });
+        } else {
+            row += `<tr><td colspan='12' class='text-center'>no records found</td></tr>`;
+        }
+        $('#facultyAsst').html(row);
+    }
+
+    function deleteFile(id,FName)
+    {
+         $.ajax({
+            url: `@Url.Action("DeleteAssingment", "DigitalLibrary")`,
+            method: "DELETE",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+             data: JSON.stringify({ ASST_ID: id, FileName: FName}),
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+
+            alert(e);
+        }).always(function (e) {
+
+        });
+    }
+
+</script>

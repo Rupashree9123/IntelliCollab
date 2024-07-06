@@ -1,0 +1,507 @@
+﻿
+@{
+    ViewBag.Title = "CalendarView";
+}
+<!--css for calender-->
+<link href="~/Content/event-calendar-evo/evo-calendar/css/evo-calendar.min.css" rel="stylesheet" />
+<link href="~/Content/event-calendar-evo/evo-calendar/css/evo-calendar.midnight-blue.min.css" rel="stylesheet" />
+
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
+<style>
+    .center-checkbox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .checkboxTbl {
+        width: 50%;
+        margin-top: 0.5rem;
+    }
+
+    table thead tr th {
+        min-width: 10rem;
+    }
+
+    table tbody tr th {
+        min-width: 10rem;
+    }
+
+    #calenderViewTab {
+        height: 35rem;
+        overflow-y: scroll;
+    }
+</style>
+
+<div class="container-fluid m-1">
+    <!--Tab View-->
+    <div class="row">
+        <div class="col-lg-12">
+            <ul class="nav nav-tabs">
+                <li class="nav-item" onclick="tabFun(this,'calenderViewTab')">
+                    <a class="nav-link active" aria-current="page" href="#">Calender View</a>
+                </li>
+                @if (Session["UserRole"] != null && (Session["UserRole"].ToString().Equals("F") || Session["UserRole"].ToString().Equals("A")))
+                {
+                    <li class="nav-item" onclick="tabFun(this,'tableViewTab')">
+                        <a class="nav-link" href="#">Tabular View</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div id="calenderViewTab" class="mt-1 tab-content">
+        <div id="calendar"></div>
+    </div>
+    <div id="tableViewTab" class="mt-1 tab-content" style="display:none;">
+        <div class="row">
+            <div class="col-lg-4 col-md-4 col-sm-12">
+                <div class="d-flex flex-column bd-highlight mb-3" style="overflow-y:auto">
+                    <div class="d-flex justify-content-start">
+                        <button class="btn btn-primary m-1" onclick="addRow()"><i class="fa-solid fa-calendar-plus"></i></button>
+                        <button class="btn btn-success m-1" onclick="editRow()"><i class="fa-solid fa-edit"></i></button>
+                        <button class="btn btn-danger m-1" onclick="deleteRow()"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn btn-success m-1" onclick="submit()"><i class="fa-solid fa-floppy-disk"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="input-group mb-3 me-1 mt-2">
+                    <span class="input-group-text text-white bg-primary" id="basic-addon1">Date</span>
+                    <input type="date" class="form-control-sm" id="txtDate" />
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <button class="btn btn-success m-1" onclick="search()"><i class="fa-solid fa-search"></i> Search</button>
+            </div>
+            <div class="col-sm-12 col-md-2 col-lg-2 clearfix">
+                <div class="spinner-grow text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="d-flex flex-column bd-highlight mb-3" style="overflow-y:auto">
+            <table id="eventTable" class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" class="checkboxTbl" />All </th>
+                        <th>Event ID</th>
+                        <th>Event Name</th>
+                        <th>Description</th>
+                        <th>Event Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    <tr>
+                    </tr>
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Event Edit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Event Name</span>
+                        <input type="text" class="form-control" placeholder="Event name" aria-label="Username" aria-describedby="basic-addon1">
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Event Type</span>
+                        <select class="form-control">
+                            <option value='-1'>--SELECT--</option>
+                            <option value='exam'>Exam</option>
+                            <option value='holiday'>Holiday</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text">Description</span>
+                        <textarea class="form-control" aria-label="With textarea"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--JQuery-->
+<script src="~/Content/event-calendar-evo/evo-calendar/js/evo-calendar.min.js"></script>
+
+<script>
+    var currntDate = moment().format("YYYY-MM-DD");
+    var cal; var myModal; var allDdl = []; let editFlag = false;
+    var eventList = [];
+    $(() => {
+        initEvent();
+        getEventTypeList();
+    });
+
+
+
+    function initEvent() {
+        var currentDate = new Date();
+
+        // Format the date as YYYY-MM-DD (required format for input type="date")
+        $('#txtDate').val(currentDate.toISOString().slice(0, 10));
+
+
+        cal = $('#calendar').evoCalendar({
+            format: 'mm/dd/yyyy',
+            theme: 'Midnight Blue',
+        });
+
+        //calneder event
+        $('#calendar').on('selectDate', function (event, newDate, oldDate) {
+            //addEvent()
+            //$("#staticBackdrop").modal("show");//for model
+
+            let getDay_ = currntDate.substr(8, 2);
+            let getDay = newDate.substr(3, 2);
+            currntDate = currntDate.replace(getDay_, getDay);
+            $('#txtDate').val(currntDate);
+
+            getEventList();
+        });
+
+        $('#calendar').on('selectMonth', function (event, activeMonth, monthIndex) {
+            // code here...
+            let getMonth_ = currntDate.substr(5, 2);
+            let getMonth = (monthIndex+1) > 10 ? (monthIndex+1) : '0' + (monthIndex+1);
+            currntDate = currntDate.replace(getMonth_, getMonth);
+            $('#txtDate').val(currntDate)
+
+            getEventList();
+        });
+
+        $('#calendar').on('selectYear', function (event, activeYear) {
+            // code here...
+
+            let getYear_ = currntDate.substr(0, 4);
+            let getYear = activeYear.toString();
+            currntDate = currntDate.replace(getYear_, getYear);
+            $('#txtDate').val(currntDate)
+
+            getEventList();
+        });
+
+        //checkBox ALL
+        $('#selectAll').change(function () {
+            var isChecked = $(this).prop('checked');
+            // Set the checked state of all checkboxes in the table
+            $('.checkboxTbl').prop('checked', isChecked);
+        });
+
+
+    }
+
+    //add event to calender
+    function addEvent(eventList) {
+        //cal.evoCalendar('addCalendarEvent', {
+        //    id: 'kNybja6',
+        //    name: 'Mom\'s Birthday',
+        //    description: 'Lorem ipsum dolor sit..',
+        //    //date: 'Feb 27, 2024',
+        //    date: '02/27/2024',
+        //    type: 'acd'
+        //});
+        cal.evoCalendar('addCalendarEvent', eventList);
+    }
+
+    //add Row
+    function addRow() {
+        let row = `<tr>
+                        <td class="center-checkbox"><input id='new' type="checkbox" data-attr="checkBox" class="save checkboxTbl form-check" /></td>
+                        <td><input type='text' class='form-control save' data-attr='EVENT_ID' disabled value=''/></td>
+                        <td><input type='text' class='form-control save' data-attr='EVENT_NAME'  value=''/></td>
+                        <td><input type='text' class='form-control save' data-attr='EVENT_DESC'  value=''/></td>
+                        <td>${rowDdlBind('new', "EventList", '-1', 'EVENT_TYPE', true, '')}</td>
+                        <td><input type='date' class='form-control edit save' data-attr='START_DATE'  value=''/></td>
+                        <td><input type='date' class='form-control edit save' data-attr='END_DATE'  value=''/></td>
+
+                   </tr>`;
+        $('#eventTable tbody').append(row);
+    }
+
+    function deleteRow() {
+        var checkedCheckboxes = $('.checkboxTbl:checked');
+        let deleteIdList = [];
+
+        checkedCheckboxes.each(function () {
+
+            var headerId = $(this).attr('id');
+            if (!(headerId == 'selectAll')) {
+                $(this).closest('tr').remove();
+
+
+                if (headerId != "new") {
+                    deleteIdList.push(`'${headerId}'`);
+                }
+            }
+
+        });
+
+        if (deleteIdList.length > 0) {
+            $.ajax({
+                url: `@Url.Action("deleteEvent", "UserManagement")`,
+                method: "DELETE",
+                beforeSend: function (xhr) {
+                    $('.spinner-grow').show();
+                },
+                dataType: 'json',
+                data: JSON.stringify(deleteIdList),
+                contentType: 'application/json;charset=utf-8',
+                statusCode: {
+                    404: function () {
+                        alert("page not found");
+                    },
+                    505: function () {
+                        alert("Internal Server Error");
+                    }
+                }
+            }).done(function (e) {
+                console.table(e);
+                console.log("success Section");
+                alert(e);
+            }).always(function (e) {
+                console.log("complete Section");
+                $('.spinner-grow').hide();
+                getEventList();
+            });
+        }
+    }
+
+    function editRow() {
+        if (editFlag) {
+            $('.edit').prop('disabled', true);
+            editFlag = false;
+        } else {
+            $('.edit').prop('disabled', false);
+            editFlag = true;
+        }
+    }
+
+    function submit() {
+        let rowObj = [];
+
+        var checkedCheckboxes = $('.checkboxTbl:checked');
+
+        checkedCheckboxes.each(function () {
+
+            var headerId = $(this).attr('id');
+            let columns = $(this).closest('tr').find('td');
+
+            let obj = {};
+
+            if (!(headerId == 'selectAll')) {
+                columns.each(function () {
+                    let attrName = $(this).find('.save').attr('data-attr');
+                    if (!(attrName == 'checkBox')) {
+                        obj[attrName] = ((attrName == 'TO_DATE') || (attrName == 'FROM_DATE')) ? dateFormater($(this).find('.save').val()) : $(this).find('.save').val();
+                    }
+                });
+                rowObj.push(obj);
+            }
+        });
+
+        console.log(rowObj);
+
+         if (rowObj != null && rowObj.length > 0) {
+            if (rowObj.some(x => x.BRANCH != '-1') && rowObj.some(x => x.SESSION != '')) {
+                $.ajax({
+                    url: `@Url.Action("saveEvent", "UserManagement")`,
+                    method: "PUT",
+                    beforeSend: function (xhr) {
+                        console.log("Before Section");
+                    },
+                    data: JSON.stringify(rowObj),
+                    dataType: 'json',
+                    contentType: 'application/json;charset=utf-8',
+                    statusCode: {
+                        404: function () {
+                            alert("page not found");
+                        },
+                        505: function () {
+                            alert("Internal Server Error");
+                        }
+                    }
+                }).done(function (e) {
+                    console.table(e);
+                }).always(function (e) {
+                    alert(e);
+                    getEventList();
+                });
+            } else {
+                alert("Select Branch to save data");
+            }
+        } else {
+            alert("please select row to save the data");
+        }
+    }
+    //for tab controll
+    function tabFun(e, id) {
+        var tabs = document.querySelectorAll('.nav-tabs .nav-item');
+        tabs.forEach(function (item) {
+            $(item.children).removeClass('active');
+        });
+
+        var tabContain = document.querySelectorAll('.tab-content');
+        tabContain.forEach(function (item) {
+            $(item).hide();
+        });
+
+        $(e.children).addClass('active')
+        $(`#${id}`).show(400);
+    }
+
+    function dateFormater(dt) {
+        //2024-02-29
+        let dateArray = dt.split('-');
+        if (dateArray.length == 3) {
+            return `${dateArray[1]}/${dateArray[2]}/${dateArray[0]}`;
+        } else {
+            return '';
+        }
+
+    }
+
+    function generateTable(dataSet) {
+
+        let row = ``;
+        if (dataSet != null && dataSet.length > 0) {
+            $.each(dataSet, function (i, e) {
+                row += `<tr>
+                    <td class="center-checkbox"><input id='${e.EVENT_ID}' type="checkbox" data-attr="checkBox" class="save checkboxTbl form-check" /></td>
+                    <td><input type='text' class='form-control save' data-attr='EVENT_ID' disabled value='${e.EVENT_ID}'/></td>
+                    <td><input type='text' class='form-control save' data-attr='EVENT_NAME' disabled value='${e.EVENT_NAME}'/></td>
+                    <td><input type='text' class='form-control edit save' data-attr='EVENT_DESC' disabled value='${e.EVENT_DESC}'/></td>
+                    <td>${rowDdlBind(i + e.EVENT_TYPE, "EventList", e.EVENT_TYPE, 'EVENT_TYPE', true, 'disabled')}</td>
+                    <td><input type='date' class='form-control edit save' data-attr='START_DATE' disabled value='${moment(e.START_DATE).format("YYYY-MM-DD")}'/></td>
+                    <td><input type='date' class='form-control edit save' data-attr='END_DATE' disabled value='${moment(e.END_DATE).format("YYYY-MM-DD")}'/></td>
+
+                    </tr>`;
+
+            });
+        } else {
+            row += `<tr><td colspan='7' class='text-center text-white'>No records found</td></tr>`;
+        }
+
+        $('#tbody').html(row);
+    }
+
+    function rowDdlBind(id, DataKey, key, dataAttr, editFlag, disableFlg) {
+
+        let editCmd = editFlag ? 'edit' : '';
+        let option = `<select id='#${id}' data-attr='${dataAttr}' class='form form-control ${editCmd} save' ${disableFlg}>`;
+
+        option += `<option value='-1'>--SELECT--</option>`;
+        if (allDdl[DataKey] != null && allDdl[DataKey].length > 0) {
+            $.each(allDdl[DataKey], function (i, e) {
+                if (e.VALUE == key)
+                    option += `<option value='${e.VALUE}' selected>${e.TEXT}</option>`;
+                else
+                    option += `<option value='${e.VALUE}' >${e.TEXT}</option>`;
+            });
+        }
+        option += `</select>`;
+
+        return option;
+    }
+    //api calling
+    function getEventTypeList() {
+
+        $.ajax({
+            url: `@Url.Action("getEventTypeList", "UserManagement")`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+                $('.spinner-grow').show();
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            allDdl.EventList = e.map((x) => { return { VALUE: x.EVENT_ID, TEXT: x.EVENT_NAME } });
+        }).always(function (e) {
+            console.log("complete Section");
+            $('.spinner-grow').hide();
+            getEventList();
+        });
+    }
+
+    function getEventList() {
+        $.ajax({
+            url: `@Url.Action("getEventOrNoticeList", "UserManagement")?startDate=${currntDate}`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+                $('.spinner-grow').show();
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            eventList = [];
+            $.each(e, function (i, x) {
+
+                for (let i = 0; i <= Math.abs(x.NO_DAYS); i++) {
+                    eventList.push({
+                        id: x.EVENT_ID+i,
+                        name: x.EVENT_NAME,
+                        description: x.EVENT_DESC,
+                        date: moment(x.START_DATE).add(i, 'days').format("MM/DD/YYYY"),
+                        type: x.EVENT_TYPE
+                    });
+                }
+            });
+            addEvent(eventList);
+            generateTable(e);
+        }).always(function (e) {
+            console.log("complete Section");
+            $('.spinner-grow').hide();
+        });
+    }
+
+    function search() {
+        currntDate = $('#txtDate').val();
+        getEventList();
+    }
+</script>

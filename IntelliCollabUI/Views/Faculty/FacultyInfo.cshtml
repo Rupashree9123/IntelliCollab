@@ -1,0 +1,424 @@
+﻿
+@{
+    ViewBag.Title = "FacultyInfo";
+}
+<style>
+    .center-checkbox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .checkboxTbl {
+        width: 50%;
+        margin-top: 0.5rem;
+    }
+
+    table thead tr th {
+        min-width: 10rem;
+    }
+
+    table tbody tr th {
+        min-width: 10rem;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+<h2 class="text-center text-white">Faculty Infomation</h2>
+<hr class="border-light" />
+<div id="tableViewTab" class="mt-1 tab-content">
+    <div class="row">
+        <div class="col-lg-2">
+            <div class="d-flex justify-content-start">
+                <button id="btnPlus" class="btn btn-primary m-1" onclick="addRow()"><i class="fa-solid fa-calendar-plus"></i></button>
+                <button id="btnAdd" class="btn btn-success m-1" onclick="editRow()"><i class="fa-solid fa-edit"></i></button>
+                <button id="btnDel" class="btn btn-danger m-1" onclick="deleteRow()"><i class="fa-solid fa-trash"></i></button>
+                <button id="btnSave" class="btn btn-success m-1" onclick="submit()"><i class="fa-solid fa-floppy-disk"></i></button>
+            </div>
+        </div>
+        <div class="col-lg-1">
+            <button type="button" class="btn btn-primary mt-1 mb-1">
+                Records <span class="badge bg-secondary" id="noOfFlty">00004</span>
+            </button>
+        </div>
+        <div class="col-lg-3">
+            <div class="input-group mb-3">
+                <input id="txtId" type="text" class="form-control" placeholder="Search by Faculty Id" />
+                <button class="input-group-text btn btn-success" id="btnSearchById"><i class="fa-solid fa-search"></i></button>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="row">
+                <div class='col-sm-12 col-md-4 col-lg-4'>
+                    <div class="input-group mb-3 me-1">
+                        <span class="input-group-text text-white bg-primary" id="basic-addon1">Branch</span>
+                        <select id="ddlBranch" class="form-select">
+                            <option value="ALL" selected>--ALL--</option>
+                            <option value="ME">MECHANICAL ENGINEERING</option>
+                            <option value="CSE">COMPUTER SCIENCE ENGINEERING</option>
+                            <option value="ECE">ELECTRONIC ENGINEERING</option>
+                            <option value="EE">ELECTRICAL</option>
+                            <option value="CE">CIVIL ENGINEERING</option>
+                        </select>
+                    </div>
+                </div>
+                <div class='col-sm-12 col-md-4 col-lg-4'>
+                    <div class="input-group mb-3 me-1">
+                        <span class="input-group-text text-white bg-primary" id="basic-addon1">Session</span>
+                        <select id="ddlSession" class="form-select">
+                            <option>2020-2024</option>
+                            <option>2021-2025</option>
+                            <option>2022-2026</option>
+                        </select>
+
+                    </div>
+                </div>
+                <div class='col-sm-12 col-md-2 col-lg-2'>
+                    <div class="input-group mb-3 me-1">
+                        <button class="input-group-text btn btn-success" id="btnSearchByBranch"><i class="fa-solid fa-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-sm-12 col-md-2 col-lg-2 clearfix">
+                    <div class="spinner-grow text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex flex-column bd-highlight mb-3" style="overflow-y:auto">
+        <table id="tblFaculty" class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th><input type="checkbox" id="selectAll" class="checkboxTbl" />All </th>
+                    <th class="d-none">RowID</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Branch</th>
+                    <th>Semester</th>
+                    <th>Subject</th>
+                    @*<th>Phone No</th>
+                        <th>Gender</th>*@
+                    @*<th>Message</th>*@
+                </tr>
+            </thead>
+            <tbody id="facultyTable">
+                <tr>
+                    <td class="center-checkbox"><input type="checkbox" data-attr="checkBox" class="save checkboxTbl form-check" /></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    @*<td></td>*@
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    var allDdl = [];
+    $(() => {
+        getDdlData();
+        /*getFacultyInfo();*/
+        $('.edit').prop('disabled', true);
+
+        //checkBox ALL
+        $('#selectAll').change(function () {
+            var isChecked = $(this).prop('checked');
+            // Set the checked state of all checkboxes in the table
+            $('.checkboxTbl').prop('checked', isChecked);
+        });
+
+    });
+
+    function getFacultyInfo() {
+        let id = $('#txtId').val();
+        let branch = $('#ddlBranch').val();
+        let session = $('#ddlSession').val();
+        $.ajax({
+            url: `@Url.Action("GetFacultyInfo","Faculty")?Id=${id}&Branch=${branch}&Sess=${session}`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                $('.spinner-grow').show();
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+            console.log("success Section");
+            facultyTable(e);
+            //alert("success section");
+        }).always(function (e) {
+            console.log("complete Section");
+            $('.spinner-grow').hide();
+        });
+    }
+
+
+    function facultyTable(dataSet) {
+        $('#btnPlus').prop("disabled", false);
+        $('#btnAdd').prop("disabled", false);
+        $('#btnDel').prop("disabled", false);
+        $('#btnSave').prop("disabled", false);
+
+
+        $('#facultyTable').empty();
+        $('#noOfFlty').text(dataSet.length);
+        let row = ``;
+        if (dataSet != null && dataSet.length > 0) {
+            $.each(dataSet, function (i, e) {
+                row += `<tr>
+                <td class="center-checkbox"><input id="${e.ROW_ID}" type="checkbox" data-attr="checkBox" class="save checkboxTbl form-check" /></td>
+                <td class="d-none"><input data-attr='ROW_ID' class='form-control save' value='${e.ROW_ID}'/></td>
+                <td><input data-attr='F_ID' class='form-control save' value='${e.F_ID}' disabled/></td>
+                <td>${rowDdlBind(i + e.ROW_ID, "FacultyList", e.F_ID, 'F_ID', true,'disabled')}</td>
+                <td>${rowDdlBind(i + e.ROW_ID, "DeptList", e.DEPT, 'DEPT', false,'disabled')}</td>
+                <td>${rowDdlBind(i + e.ROW_ID, "DeptList", e.BRANCH_ID, 'BRANCH_ID', true, 'disabled')}</td>
+                <td>${ddlSemester(i + e.ROW_ID, e.SEM)}</td>
+                <td>${rowDdlBind(i + e.SUB_ID, "SubjectList", e.SUB_ID, 'SUB_ID', true, 'disabled')}</td>
+                </tr>`;
+                //<td><input data-attr='SEM' class='form-control edit save' value='${e.SEM}' disabled /></td>
+                //<td><button data-attr='Msg' class='btn btn-success save'><i class="fa fa-message"></i></button></td>
+            });
+        } else {
+            row += `<tr><td colspan='10' class='text-center text-white'>No Records</td></tr>`;
+
+            $('#btnPlus').prop("disabled", true);
+            $('#btnAdd').prop("disabled", true);
+            $('#btnDel').prop("disabled", true);
+            $('#btnSave').prop("disabled", true);
+        }
+        $('#facultyTable').html(row);
+    }
+
+    //add Row
+    function addRow() {
+        let row = `<tr>
+                <td class="center-checkbox"><input id="new" type="checkbox" data-attr="checkBox" class="save checkboxTbl form-check" /></td>
+                <td class="d-none"><input data-attr='ROW_ID' class='form-control save' value='${e.ROW_ID}'/></td>
+                <td><input data-attr='F_ID' class='form-control save' value='' disabled/></td>
+                <td>${rowDdlBind('new', "FacultyList", '-1','F_ID',true,'')}</td>
+                <td>${rowDdlBind('new', "DeptList", '-1', 'DEPT', false,'disabled')}</td>
+                <td>${rowDdlBind('new', "DeptList", '-1', 'BRANCH_ID', true, '')}</td>
+                <td>${ddlSemester('new',null)}</td>
+                <td>${rowDdlBind('new', "SubjectList", '-1', 'SUB_ID', true, '')}</td>
+                </tr>`;
+        //<td><input data-attr='SEM' class='form-control edit save' value=''/></td>
+        //<td><button data-attr='Msg' class='btn btn-success'><i class="fa fa-message"></i></button></td>
+        $('#facultyTable').append(row);
+    }
+
+    function deleteRow() {
+        let deleteIdList = [];
+        var checkedCheckboxes = $('.checkboxTbl:checked');
+
+        checkedCheckboxes.each(function () {
+
+            var headerId = $(this).attr('id');
+            if (!(headerId == 'selectAll')) {
+                $(this).closest('tr').remove();
+
+                if (headerId!="new") {
+                    deleteIdList.push(parseInt(headerId));
+                }
+            }
+        });
+
+        if (deleteIdList.length > 0) {
+            $.ajax({
+                url: `@Url.Action("DeleteFacultySubjectMappingInfo", "Faculty")`,
+                method: "DELETE",
+                beforeSend: function (xhr) {
+                    $('.spinner-grow').show();
+                },
+                dataType: 'json',
+                data: JSON.stringify(deleteIdList),
+                contentType: 'application/json;charset=utf-8',
+                statusCode: {
+                    404: function () {
+                        alert("page not found");
+                    },
+                    505: function () {
+                        alert("Internal Server Error");
+                    }
+                }
+            }).done(function (e) {
+                console.table(e);
+                console.log("success Section");
+                alert(e);
+            }).always(function (e) {
+                console.log("complete Section");
+                getFacultyInfo();
+                $('.spinner-grow').hide();
+            });
+        }
+
+    }
+    let editFlag = false;
+    function editRow() {
+        if (editFlag) {
+            $('.edit').prop('disabled', true);
+            editFlag = false;
+        } else {
+            $('.edit').prop('disabled', false);
+            editFlag = true;
+        }
+    }
+    function submit() {
+        let rowBoj = [];
+
+        var checkedCheckboxes = $('.checkboxTbl:checked');
+
+        checkedCheckboxes.each(function () {
+
+            var headerId = $(this).attr('id');
+            let columns = $(this).closest('tr').find('td');
+
+            let obj = {};
+
+            if (!(headerId == 'selectAll')) {
+                columns.each(function () {
+                    let attrName = $(this).find('.save').attr('data-attr');
+                    if (!(attrName == 'checkBox')) {
+                        obj[attrName] = $(this).find('.save').val();
+                    }
+                    if ($(this).find('.save').val() == undefined) {
+                        var a = '';
+                    }
+                });
+                obj["SESSION"] = $('#ddlSession').val();
+                rowBoj.push(obj);
+            }
+        });
+
+        console.log(rowBoj);
+        if (rowBoj != null && rowBoj.length > 0) {
+            $.ajax({
+                url: `@Url.Action("SaveFacultySubjectMapping", "Faculty")`,
+                method: "PUT",
+                beforeSend: function (xhr) {
+                    console.log("Before Section");
+                },
+                data: JSON.stringify(rowBoj),
+                dataType: 'json',
+                contentType: 'application/json;charset=utf-8',
+                statusCode: {
+                    404: function () {
+                        alert("page not found");
+                    },
+                    505: function () {
+                        alert("Internal Server Error");
+                    }
+                }
+            }).done(function (e) {
+                console.table(e);
+            }).always(function (e) {
+                alert(e);
+            });
+        } else {
+            alert("please select row to save the data");
+        }
+
+    }
+
+    //search event
+    $('#btnSearchByBranch').click(() => {
+        getFacultyInfo();
+    });
+
+    $('#btnSearchById').click(() => {
+        getFacultyInfo();
+    });
+
+
+    //calling all dropdown
+    function getDdlData() {
+        $.ajax({
+            url: `@Url.Action("GetAllDropdownList", "DashBoard")`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+
+        }).always(function (e) {
+            allDdl = e;
+            ddlBind("ddlBranch", e.DeptList, 'ALL','ALL');
+            getFacultyInfo();
+        });
+    }
+
+    function ddlBind(id, dataList,optionMsg,optionVal) {
+        $(`#${id}`).empty();
+
+        let option = `<option value='${optionVal}'>--${optionMsg}--</option>`;
+        if (dataList != null && dataList.length > 0) {
+            $.each(dataList, function (i,e) {
+                option += `<option value='${e.VALUE}'>${e.TEXT}</option>`
+            });
+        }
+        $(`#${id}`).html(option);
+    }
+
+    function rowDdlBind(id, DataKey, key,dataAttr,editFlag,disableFlg) {
+        //$(`#${id}`).empty();
+        let editCmd = editFlag ? 'edit' : '';
+        //let disabledCmd = editFlag ? 'disabled' : '';
+        let option = `<select id='#${id}' data-attr='${dataAttr}' class='form form-control ${editCmd} save' ${disableFlg}>`;
+       // `<select id='${i + e.F_ID}' class='form form-control edit save' onclick='loadDdl("${i + e.F_ID}","FacultyList","${e.F_ID}")'></select>`
+        option += `<option value='-1'>--SELECT--</option>`;
+        if (allDdl[DataKey] != null && allDdl[DataKey].length > 0) {
+            $.each(allDdl[DataKey], function (i, e) {
+                if (e.VALUE == key)
+                    option += `<option value='${e.VALUE}' selected>${e.TEXT}</option>`;
+                else
+                    option += `<option value='${e.VALUE}' >${e.TEXT}</option>`;
+            });
+        }
+        option += `</select>`;
+
+        return option;
+    }
+
+    function ddlSemester(id,selectedItem) {
+        let option = `<select id='${id}' data-attr='SEM' class='form form-control edit save'>`;
+        for (let i = 1; i <= 8; i++) {
+            if (selectedItem == i) {
+                option += `<option value='${i}' selected>${i}</option>`;
+            } else {
+                option += `<option value='${i}'>${i}</option>`;
+            }
+            
+        }
+        option += `</select>`;
+        return option;            
+    }
+</script>
+

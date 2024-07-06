@@ -1,0 +1,315 @@
+﻿
+@{
+    ViewBag.Title = "Attendance";
+}
+
+<h2 class="text-center text-white">Attendance</h2>
+<hr class="border-1 border-white" />
+
+<style>
+    #nam tr td {
+        color: white !important;
+    }
+
+    table thead tr th {
+        min-width: 10rem;
+    }
+
+    table tbody tr th {
+        min-width: 10rem;
+    }
+</style>
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-lg-2 col-md-2 col-sm-12">
+            <div class="input-group mb-3 me-1">
+                <span class="input-group-text text-white bg-primary" id="basic-addon1">Session</span>
+                <select id="ddlSession" class="form-select">
+                    <option value="0000-0000">--SELECT--</option>
+                    <option value="2020-2024">2020-2024</option>
+                    <option value="2021-2025">2021-2025</option>
+                    <option value="2022-2026">2022-2026</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-12">
+            <div class="input-group mb-3 me-1">
+                <span class="input-group-text text-white bg-primary" id="basic-addon1">Year</span>
+                <select id="ddlYear" class="form-select">
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-12">
+            <div class="input-group mb-3 me-1">
+                <span class="input-group-text text-white bg-primary" id="basic-addon1">Month</span>
+                <select id="ddlMonth" class="form-select">
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-12">
+            <div class="input-group mb-3 me-1">
+                <span class="input-group-text text-white bg-primary" id="basic-addon1">Branch</span>
+                <select id="ddlBranch" class="form-select">
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-12">
+            <div class="input-group mb-3 me-1">
+                <span class="input-group-text text-white bg-primary" id="basic-addon1">Semester</span>
+                <select id="ddlSem" class="form-select">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-1 col-md-1 col-sm-12">
+            <div class="input-group mb-3 me-1">
+                <button class="input-group-text btn btn-success" id="btnSearch"><i class="fa-solid fa-search"></i></button>
+            </div>
+        </div>
+        <div class="col-lg-1 col-md-1 col-sm-12">
+            <div class="input-group mb-3 me-1">
+                <button class="input-group-text btn btn-success" id="btnSubmit"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column bd-highlight mb-3" style="overflow-y:auto">
+        <table class="table table-bordered table-hover">
+            <thead id="att" class="table-dark">
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">1</th>
+                    <th scope="col">2</th>
+                    <th scope="col">3</th>
+                </tr>
+            </thead>
+            <tbody id="nam">
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<script>
+    var dataSet = []; var saveDataSet = []; var allDdl = [];
+    var date;
+    var months = [
+        { "TEXT": "January", "VALUE": 0 },
+        { "TEXT": "February", "VALUE": 1 },
+        { "TEXT": "March", "VALUE": 2 },
+        { "TEXT": "April", "VALUE": 3 },
+        { "TEXT": "May", "VALUE": 4 },
+        { "TEXT": "June", "VALUE": 5 },
+        { "TEXT": "July", "VALUE": 6 },
+        { "TEXT": "August", "VALUE": 7 },
+        { "TEXT": "September", "VALUE": 8 },
+        { "TEXT": "October", "VALUE": 9 },
+        { "TEXT": "November", "VALUE": 10 },
+        { "TEXT": "December", "VALUE": 11 }
+    ]
+
+
+    //loading event
+    $(() => {
+        getDdlData();
+
+        getAttendanceInfo();
+    })
+
+    //api calls
+    function getDdlData() {
+        $.ajax({
+            url: `@Url.Action("GetAllDropdownList", "DashBoard")`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+
+        }).always(function (e) {
+            allDdl = e;
+            ddlBind("ddlBranch", e.DeptList, '--SELECT--','-1');
+
+        });
+    }
+    function getAttendanceInfo() {
+        let year = $('#ddlYear').val();
+        let month = $('#ddlMonth').val();
+        let branch = $('#ddlBranch').val();
+        let sem = $('#ddlSem').val();
+        let session = $('#ddlSession').val();
+        //string Year,string Month, string Sem, string Branch, string Sessions
+        $.ajax({
+            url: `@Url.Action("GetAttendanceInfo", "UserManagement")?Year=${year}&Month=${month}&Sem=${sem}&Branch=${branch}&Sessions=${session}`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+            dataSet = e;
+            generateTable(e);
+        }).always(function (e) {
+
+        });
+    }
+
+
+    //generate components
+    function ddlBind(id, dataList, optionMsg, optionVal) {
+        $(`#${id}`).empty();
+
+        let option = `<option value='${optionVal}'>--${optionMsg}--</option>`;
+        if (dataList != null && dataList.length > 0) {
+            $.each(dataList, function (i, e) {
+                option += `<option value='${e.VALUE}'>${e.TEXT}</option>`
+            });
+        }
+        $(`#${id}`).html(option);
+    }
+    function PresentAbsent(id, key, S_ID) {
+        return `<select id='${id}' class="form form-control" onchange='changeEvent("${id}","${S_ID}")'>
+                                    <option value="" ${key == null ? 'selected' : '' }>NA</option>
+                                    <option value="A" ${key == 'A' ? 'selected': '' }>A</option>
+                                    <option value="P" ${key == 'P' ? 'selected' : '' }>P</option>
+                                </select>`;
+    }
+
+    function generateTable(dataSource) {
+        let hRow = ``;
+        let month = parseInt($('#ddlMonth').val());
+        let days = getLastDateOfMonth(2024, isNaN(month) ? 1 : month);
+
+        $('#att').html(hRow);
+        hRow = '<tr>';
+        for (let i = 0; i <= days; i++) {
+            if (i == 0) {
+                hRow += `<th scope="col">Name</th>`;
+            } else {
+                hRow += `<th scope="col">${i}</th>`
+            }
+        }
+        hRow += '</tr>';
+        $('#att').html(hRow);
+
+        //body part
+        let bRow = ``;
+        $('#nam').html(bRow);
+        if (dataSource != null && dataSource.length > 0) {
+            $.each(dataSource, function (i, e) {//no of students
+                bRow += `<tr>`;
+                for (let col = 0; col <= days; col++) {
+                    if (col == 0) {
+                        bRow += `<td>${e.S_NAME}</td>`;
+                    } else {
+                        bRow += `<td>${PresentAbsent('DAY_' + col + '-' + i, e['DAY_' + col],e.S_ID)}</td>`;
+                    }
+                }
+                bRow += `</tr>`;
+            })
+        } else {
+            bRow += `<tr><td colspan='${days+1}' >No records found.</td></tr>`
+        }
+        $('#nam').html(bRow);
+    }
+
+    //events
+    $('#ddlSession').change(() => {
+        let session = ($('#ddlSession').val()).split('-');
+
+        let year = [];
+        for (let i = parseInt(session[0]); i <= parseInt(session[1]); i++) { year.push({ TEXT: i, VALUE: i }); }
+
+        ddlBind('ddlYear', year, '--SELECT--', '-1');
+    });
+    $('#ddlYear').change(() => {
+        ddlBind('ddlMonth', months, '--SELECT--', '-1');
+    });
+    $('#ddlMonth').change(() => {
+        generateTable();
+    });
+    $('#btnSearch').click(() => {
+        getAttendanceInfo();
+    });
+    //btnSubmit
+    $('#btnSubmit').click(() => {
+        submit();
+    });
+    function changeEvent(id, SId) {
+        let idList = id.split('-');
+        if (idList.length>1) {
+            let item = dataSet.find(x => x.S_ID == SId);
+            item[idList[0]] = $(`#${id}`).val();
+            if (!saveDataSet.some(x => x.S_ID == SId))
+                saveDataSet.push(item);
+        }
+
+
+    }
+
+    //Operation
+    function getLastDateOfMonth(year, month) {
+        let firstDay = new Date(year, month + 1, 1);
+        let lastDay = new Date(firstDay - 1);
+        return lastDay.getDate();
+    }
+
+    //PUT save
+    function submit() {
+        console.log(saveDataSet);
+
+        if (saveDataSet != null && saveDataSet.length > 0) {
+            $.ajax({
+                url: `@Url.Action("SaveAttendance", "UserManagement")`,
+                method: "PUT",
+                beforeSend: function (xhr) {
+                    console.log("Before Section");
+                },
+                data: JSON.stringify(saveDataSet),
+                dataType: 'json',
+                contentType: 'application/json;charset=utf-8',
+                statusCode: {
+                    404: function () {
+                        alert("page not found");
+                    },
+                    505: function () {
+                        alert("Internal Server Error");
+                    }
+                }
+            }).done(function (e) {
+                console.table(e);
+            }).always(function (e) {
+                alert(e);
+            });
+        } else {
+            alert("please select row to save the data");
+        }
+    }
+</script>

@@ -1,0 +1,84 @@
+﻿
+@{
+    ViewBag.Title = "LogIn";
+}
+<style>
+    body {
+        /*height: 100vh !important;*/
+        /*background-image: url('../../Content/Images/MITM.jpeg');
+        box-shadow: inset 0 0 0 1000px rgba(16, 103, 150,.2);*/
+    }
+
+    .card-body {
+        background-color: #082534de !important;
+    }
+    .back-video {
+        position: absolute;
+        width: 100%;
+        left: 0;
+        bottom: 0;
+        z-index:-1;
+    }
+
+    @@media screen and (max-width: 768px) {
+        .container-fluid {
+            height: 100vh !important;
+            
+        }
+        .card-body {
+            background-color: #082534de !important;
+        }
+    }
+</style>
+
+<div class="container mt-5">
+    <video autoplay loop muted class="back-video" src="~/Content/Images/liveLoop.webm"></video>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="text-center">Login</h3>
+                </div>
+                <div class="card-body">
+                    <form action="@Url.Action("LogIn","LogIn")" method="post">
+                        <div class="row">
+                            <div class="col-7">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="text" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-6">
+                                        <button type="submit" class="btn btn-primary">Login</button>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6">
+                                        @Html.ActionLink("SignUp", "SignUp", "LogIn", new { }, new { @class = "btn btn-primary mt-1" })
+                                    </div>
+                                </div>
+                                <a href="@Url.Action("ForgetPwsd","LogIn")" class="nav-link text-primary">forget password</a>
+                            </div>
+                            <div class="col-5">
+                                <img class="img-fluid" src="~/Content/Images/loginBot.png" />
+                            </div>
+                        </div>
+                        
+                        
+                    </form>
+                </div>
+                @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                {
+                    <div class="card-footer">
+                        <div class="text-danger">@ViewBag.ErrorMessage</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+

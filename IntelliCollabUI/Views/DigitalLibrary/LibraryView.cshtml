@@ -1,0 +1,211 @@
+﻿
+@{
+    ViewBag.Title = "DigitalLibraryBoard";
+}
+<style>
+    .center-checkbox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .checkboxTbl {
+        width: 50%;
+        margin-top: 0.5rem;
+    }
+
+    table thead tr th {
+        min-width: 10rem;
+    }
+
+    table tbody tr th {
+        min-width: 10rem;
+    }
+
+    .Book {
+       
+        margin:2px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        text-align:center;
+        vertical-align:central;
+        border:none;
+    }
+</style>
+<h2 class="text-center text-white">Digital Library</h2>
+<hr class="border-light" />
+<div class="row">
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Branch</span>
+            <select id="ddlBranch" class="form-select">
+                <option>ALL</option>
+                <option>ME</option>
+                <option>CSE</option>
+                <option>ECE</option>
+                <option>EE</option>
+                <option>CE</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="input-group mb-3 me-1">
+            <span class="input-group-text text-white bg-primary" id="basic-addon1">Cources Name</span>
+            <select id="ddlSubject" class="form-select">
+                <option>Others</option>
+                <option>ME</option>
+                <option value="CSC701">CSE</option>
+                <option>ECE</option>
+                <option>EE</option>
+                <option>CE</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-12">
+        <button class="btn btn-primary" onclick="getBookList()"><i class="fa-solid fa-search"></i> Submit</button>
+    </div>
+    <div class="col-lg-12">
+        <div class="row" id="bookShow">
+            <!--<div class="col-lg-2 col-md-2">
+                <div class="card Book">
+                    <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/184.webp" class="card-img-top" alt="Fissure in Sandstone" />
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <p class="card-title">@DateTime.Now</p>
+                        <a href="#!" class="btn btn-primary" data-mdb-ripple-init><i class="fa fa-download"></i> Download</a>
+                    </div>
+                </div>
+            </div>-->
+        </div>
+    </div>
+</div>
+<script>
+     var role = '@Session["UserRole"]'!=''?'@Session["UserRole"]':"";
+    $(() => {
+        getDdlData()
+    });
+    function getBookList() {
+
+        let dataSet = {
+            Branch: $('#ddlBranch option:selected').val(),
+            //Date: $('#txtDate').val(),
+            Course: $('#ddlSubject option:selected').val()
+        }
+
+        $.ajax({
+            url: `@Url.Action("ViewBook", "DigitalLibrary")`,
+            method: "POST",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            data: JSON.stringify(dataSet),
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+
+            generateBookCard(e);
+        }).always(function (e) {
+            console.table(e);
+        });
+    }
+
+    function getDdlData() {
+        $.ajax({
+            url: `@Url.Action("GetAllDropdownList", "DashBoard")`,
+            method: "GET",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+            console.table(e);
+
+        }).always(function (e) {
+            allDdl = e;
+            ddlBind("ddlBranch", e.DeptList, '--SELECT--','ALL');
+            ddlBind("ddlSubject", e.SubjectList, '--SELECT--','ALL');
+
+        });
+    }
+
+    function ddlBind(id, dataList, optionMsg, optionVal) {
+        $(`#${id}`).empty();
+
+        let option = `<option value='${optionVal}'>--${optionMsg}--</option>`;
+        if (dataList != null && dataList.length > 0) {
+            $.each(dataList, function (i, e) {
+                option += `<option value='${e.VALUE}'>${e.TEXT}</option>`
+            });
+        }
+        $(`#${id}`).html(option);
+    }
+
+    function generateBookCard(dataList)
+    {
+        $('#bookShow').empty();
+        let card = '';
+        if (dataList!=null && dataList.length>0) {
+            $.each(dataList,function (i,e) {
+                card += `<div class="col-lg-2 col-md-2">
+                            <div class="card Book">
+                                <img src="${e.CoverImage}" class="card-img-top" alt="book cover" />
+                                <div class="card-body">
+                                    <h5 class="card-title">${e.Title}</h5>
+                                    <p class="card-text">${e.Desc}</p>
+                                    <a href="@Url.Action("Download", "DigitalLibrary")?Filename=${e.FileName}&contentType=${e.FileExtension}" download="${e.FileName}" class="btn btn-primary" data-mdb-ripple-init><i class="fa fa-download"></i> Download</a>`;
+                                    if (role == 'F' || role == 'A') {
+                                        `<button onclick="deleteFile('${e.LibId}','${e.FileName}')" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</a>`;
+                                    }
+                card +=`</div>
+                       </div>
+                   </div>`;
+            });
+        }
+        $('#bookShow').html(card);
+    }
+
+    function deleteFile(id,FName)
+    {
+         $.ajax({
+            url: `@Url.Action("DeleteBook", "DigitalLibrary")`,
+            method: "DELETE",
+            beforeSend: function (xhr) {
+                console.log("Before Section");
+            },
+            dataType: 'json',
+             data: JSON.stringify({ ASST_ID: id, FileName: FName}),
+            contentType: 'application/json;charset=utf-8',
+            statusCode: {
+                404: function () {
+                    alert("page not found");
+                },
+                505: function () {
+                    alert("Internal Server Error");
+                }
+            }
+        }).done(function (e) {
+
+            alert(e);
+        }).always(function (e) {
+            getBookList();
+        });
+    }
+</script>

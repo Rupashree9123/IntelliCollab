@@ -1,0 +1,122 @@
+﻿body {
+    padding: 0px;
+    margin: 0px;
+    /* background-color: #052130;
+    background-color: #1A6F9B;*/
+    background-image: linear-gradient(to bottom right, #052130, #1A6F9B);
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 110vh;
+    background-size:cover;
+}
+
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+
+input,
+select, textarea, .card {
+    background-color: transparent !important;
+    color: white !important;
+    border-radius: 0px !important;
+}
+.card{
+    border-color:white !important;
+}
+    select option, .dropdown-menu {
+        background-color: #0a364c !important;
+    }
+.dropdown-item{
+    color:white!important;
+}
+    .dropdown-item:hover {
+        background-color: #135476 !important;
+        color: white !important;
+    }
+.btn, .input-group-text {
+    border-radius: 0px !important;
+}  
+
+
+.form-check-input{
+    border:1px solid white !important;
+}
+
+.pt-6 {
+    padding-top: 5rem;
+}
+.mb-6 {
+    margin-bottom: 5rem !important;
+}
+
+.footer {
+    /*background-color: #333;
+    color: #fff;*/
+    left: 0;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+.dark-theme {
+    background-color: #052130 !important;
+    color:white;
+}
+
+.form-control:disabled {
+    background-color: #344873 !important;
+}
+.back-video {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    bottom: 0;
+    z-index: -1;
+}
+@media screen and (max-width: 768px) .event-hide #eventListToggler {
+    -webkit-transform: translateX(0);
+    -ms-transform: translateX(0);
+    transform: translateX(0);
+}
+
+@media screen and (max-width: 768px) #eventListToggler {
+    right: 48%;
+    -webkit-transform: translateX(100%);
+    -ms-transform: translateX(100%);
+    transform: translateX(100%);
+}
+
+@media screen and (max-width: 768px) {
+    /*.container-fluid */
+    .body-content {
+        /*background-image: linear-gradient(to bottom right, #052130, #1A6F9B);*/
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        height: 90vh;
+        overflow-y:scroll;
+    }
+
+    body {
+        padding: 0px;
+        margin: 0px;
+        /* background-color: #052130;
+    background-color: #1A6F9B;*/
+        
+        background-image: url('Images/mobileBg.jpg');
+        background-repeat: no-repeat;
+        background-position: center;
+        
+        background-size: cover;
+    }
+    .back-video{
+        display:none;
+    }
+}

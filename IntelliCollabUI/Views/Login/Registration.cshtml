@@ -1,0 +1,183 @@
+﻿
+@{
+    ViewBag.Title = "Registration";
+}
+<!--Sanjana works-->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between">
+            <img class="img-thumbnail" src="~/Content/Images/MITM_LOGO.png" />
+            <span class="h1 mt-3 ms-3">MARYLAND INSTITUTE OF TECHNOLOGY AND MANAGEMENT</span>
+        </div>
+
+    </div>
+    <div class="card-body">
+        <form id="Regform" class="row g-3 needs-validation mt-2" novalidate>
+            <div class="col-md-4">
+                <label for="FirstName" class="form-label">First name</label>*
+                <input type="text" class="form-control" id="FirstName" value="" required>
+                <div class="invalid-feedback">
+                    Please enter name.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="LastName" class="form-label">Last name</label>
+                <input type="text" class="form-control" id="LastName" value="" required>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="RegistrationNo" class="form-label">Registration No.</label>
+                <input type="text" class="form-control" id="RegistrationNo" aria-describedby="inputGroupPrepend" required>
+                <div class="invalid-feedback">
+                    Please enter Registration No.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="City" class="form-label">City</label>
+                <select class="form-select" id="City" required>
+                    <option selected disabled value="">Choose...</option>
+                    <option>...</option>
+                </select>
+                <div class="invalid-feedback">
+                    Please select a valid city.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="State" class="form-label">State</label>
+                <select class="form-select" id="State" required>
+                    <option selected disabled value="">Choose...</option>
+                    <option>...</option>
+                </select>
+                <div class="invalid-feedback">
+                    Please select a valid state.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="Country" class="form-label">Country</label>
+                <select class="form-select" id="Country" required>
+                    <option selected disabled value="">Choose...</option>
+                    <option>...</option>
+                </select>
+                <div class="invalid-feedback">
+                    Please select a valid state.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="Zip" class="form-label">Zip</label>
+                <input type="text" class="form-control" id="Zip" required>
+                <div class="invalid-feedback">
+                    Please provide a valid zip.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="MobileNo" class="form-label">Mobile No</label>
+                <input type="number" class="form-control" id="MobileNo" name="MobileNo" required>
+                <div class="invalid-feedback">
+                    Please provide a valid Mobile number.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="Email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="Email" required>
+                <div class="invalid-feedback">
+                    Please provide a valid email.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="DateOfBirth" class="form-label">Date Of Birth</label>
+                <input type="date" class="form-control" id="DateOfBirth" required>
+                <div class="invalid-feedback">
+                    Please provide a valid Date Time.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="UploadImg" class="form-label">Upload Image</label>
+                <input type="file" class="form-control" id="UploadImg">
+            </div>
+            <div class="col-md-12">
+                <label for="Address" class="form-label">Address</label>
+                <textarea type="text" class="form-control" id="Address" required rows="3"></textarea>
+                <div class="invalid-feedback">
+                    Please provide a Address.
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="TermCondition" required>
+                    <label class="form-check-label" for="TermCondition">
+                        Agree to terms and conditions
+                    </label>
+                    <div class="invalid-feedback">
+                        You must agree before submitting.
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <button id="submit" class="btn btn-primary" type="submit">Submit form</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<script>
+    (() => {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        const forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.stopPropagation()
+                } else {
+                    console.log(form);
+                }
+                collectData();
+                event.preventDefault()
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+
+    function collectData() {
+        var collection = {}; 
+        $("#Regform :input").each((indx, e) => {
+            var v = $(this);
+            if (e.id !== "submit" && e.id != "UploadImg") {
+                collection[e.id] = e.value;
+            }
+        });
+        console.log(collection);
+
+
+        var formData = new FormData();
+        formData.append("UploadImg", $('#UploadImg')[0].files[0]);
+        formData.append("profileData", JSON.stringify(collection));
+        sendData(formData);
+        return collection;
+    }
+
+    function sendData(formData)
+    {
+        $.ajax({
+            url: '@Url.Action("Create","LogIn")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                console.log('Image uploaded successfully:', response);
+            },
+            error: function (error) {
+                console.error('Error uploading image:', error);
+            }
+        });
+    }
+
+</script>

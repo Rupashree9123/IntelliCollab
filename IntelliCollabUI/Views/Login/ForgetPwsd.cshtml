@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewBag.Title = "ForgetPwsd";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="text-center">Password Recovery</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-7">
+                            <form action="@Url.Action("SendOTP","LogIn")" method="post">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="text" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <button type="submit" class="btn btn-primary">Send OTP</button>
+                                </div>
+                            </form>
+                            @if (ViewBag.msg != null)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label">@ViewBag.msg</label>
+                                </div>
+
+                            }
+
+                            @if (ViewBag.OTP_FLAG != null && ViewBag.OTP_FLAG)
+                            {
+
+                                <form action="@Url.Action("ChangePassword","LogIn")" method="post">
+                                    <div class="mb-3">
+                                        <label for="passcode" class="form-label">Pass Code</label>
+                                        <input type="text" class="form-control" id="passcode" name="passcode" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control" id="passwords" name="passwords" placeholder="Password" required>
+                                        <input type="text" class="form-control" id="confirmPswd" name="confirmPswd" placeholder="Re-enter Password" required>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-6 col-sm-6">
+                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            }
+
+                        <a href="@Url.Action("LogIn","LogIn")" class="nav-link text-primary"> LogIn</a>
+                        </div>
+                        <div class="col-5">
+                            <img class="img-fluid" src="~/Content/Images/loginBot.png" />
+                        </div>
+                    </div>
+
+
+
+                </div>
+
+                <div class="card-footer">
+                    <div class="text-danger">@ViewBag.ErrorMessage</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
